@@ -37,6 +37,7 @@ export default function NisargMine() {
     
         if (newGrid[r][c].content === 'bomb') {
             setGrid(newGrid);
+            setDiamondCount(0)
             setTimeout(() => {
                 newGrid.forEach(row => row.forEach(cell => cell.revealed = true));
                 setGrid(newGrid); 
