@@ -5,15 +5,15 @@ import bomb from './Images/bomb.png';
 export default function NisargMine() {
     const [grid, setGrid] = useState(Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ revealed: false, content: 'empty' }))));
     const [gameOver, setGameOver] = useState(false);
-    const [minesCount, setMinesCount] = useState(10); 
+    const [minesCount, setMinesCount] = useState(1);
+    const [diamondCount, setDiamondCount] = useState(0);
 
     useEffect(() => {
         generateMine();
     }, [minesCount]); 
 
     function generateMine() {
-        let newGrid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ revealed: false, content: 'diamond' }))); // Initialize all cells as diamonds
-    
+        let newGrid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ revealed: false, content: 'diamond' })));
         let minecnt = 0;
         while (minecnt < minesCount) { 
             let row = Math.floor(Math.random() * 5);
@@ -23,17 +23,20 @@ export default function NisargMine() {
                 newGrid[row][column].content = 'bomb';
                 minecnt++;
             }
+
         }
-    
         setGrid(newGrid); 
     }
     
     function checkmine(r, c) {
-        let newGrid = [...grid]; 
         
-        if(newGrid[r][c].content === 'bomb'){
-            newGrid[r][c].revealed = true;
-            setGrid(newGrid); 
+        if (gameOver || grid[r][c].revealed) return;
+    
+        let newGrid = [...grid]; 
+        newGrid[r][c].revealed = true;
+    
+        if (newGrid[r][c].content === 'bomb') {
+            setGrid(newGrid);
             setTimeout(() => {
                 newGrid.forEach(row => row.forEach(cell => cell.revealed = true));
                 setGrid(newGrid); 
@@ -41,21 +44,27 @@ export default function NisargMine() {
                 setGameOver(true);
             }, 100);
         } else {
-            newGrid[r][c].revealed = true; 
-            setGrid(newGrid); 
+            setGrid(newGrid);
+            setDiamondCount(prevCount => prevCount + 1);
+            if (diamondCount + 1 === 25 - minesCount) {
+                setTimeout(() => {
+                    alert("You win");
+                    setDiamondCount(0);
+                    setGameOver(true);
+                }, 100);
+            }
         }
     }
+    
 
     function handleInputChange(event) {
-        setMinesCount(parseInt(event.target.value));
+        setMinesCount(parseInt(event.target.value, 10));
     }
 
-
-    // Reset game function
     function resetGame() {
-        setGrid(Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ revealed: false, content: 'empty' })))); // Reset grid
-        setGameOver(false); // Reset game over state
-        generateMine(); // Regenerate mines
+        setGrid(Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ revealed: false, content: 'empty' }))));
+        setGameOver(false); 
+        generateMine();
     }
 
     return (
@@ -68,12 +77,13 @@ export default function NisargMine() {
                                 <button
                                     key={`${rowIndex}-${colIndex}`}
                                     className='rounded-lg shadow-2xl w-full h-12 sm:h-16 lg:w-16 lg:h-16 border-solid border-black border-2 bg-gray-400 text-white transition duration-150 hover:scale-110 hover:shadow-2xl'
-                                    onClick={() => checkmine(rowIndex, colIndex)}
+                                    onClick={() => {checkmine(rowIndex, colIndex)
+                                    }}
                                     disabled={cell.revealed || gameOver}
                                 >
-                                    {cell.revealed ? (
+                                    {cell.revealed && (
                                         <img src={cell.content === 'bomb' ? bomb : diamond} alt={cell.content} className='w-full h-full rounded-lg'/>
-                                    ) : null}
+                                    )}
                                 </button>
                             ))}
                         </div>
