@@ -23,7 +23,6 @@ export default function NisargMine() {
                 newGrid[row][column].content = 'bomb';
                 minecnt++;
             }
-        console.log("Bomb" + row + column);
 
         }
         setGrid(newGrid); 
